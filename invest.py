@@ -253,7 +253,7 @@ async def changeDiff(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f'✅Расхождение цен изменено на {diff} руб.')
 
 
-app = ApplicationBuilder().token("8196098239:AAH5Qay0ez6LGOdKkofohiaa15IJkYcHqCY").build()
+app = ApplicationBuilder().token(BOT).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("track", trackingManage))
 app.add_handler(CommandHandler("menu", menu))
@@ -262,12 +262,7 @@ app.add_handler(CommandHandler("changedif", changeDiff))
 if __name__ == "__main__":
     print("W O R K I N G ")
     
-    app.run_webhook(
-        listen='0.0.0.0',
-        port=PORT,
-        url_path=BOT,
-        webhook_url=f'{WEBHOOK_URL}/{BOT}'
-    )
+    app.run_polling(allowed_updates=Update.ALL_TYPES)
     getPrices(getAssets(acc_init()))
     
     print("S T O P E D ")
