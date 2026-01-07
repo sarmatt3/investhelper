@@ -265,7 +265,7 @@ if __name__ == "__main__":
     app.run_webhook(
         listen='0.0.0.0',
         port=PORT,
-        url_path=TOKEN,
+        url_path=BOT,
         webhook_url=f'{WEBHOOK_URL}/{BOT}'
     )
     getPrices(getAssets(acc_init()))
