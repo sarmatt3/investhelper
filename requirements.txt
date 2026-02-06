@@ -1,6 +1,5 @@
 python-telegram-bot
 pandas
-requirements
 requests
 beautifulsoup4
 t-tech-investments
