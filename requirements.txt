@@ -2,3 +2,4 @@ python-telegram-bot
 pandas
 requests
 beautifulsoup4
+t-tech-investments==0.3.3
