@@ -1,268 +1,196 @@
-from t_tech.invest import *
+import ttech, sqlite3, funcs, security, investment
 import asyncio
 from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
 from datetime import datetime, date
 import os
+
 BOT = os.getenv("BOT_TOKEN")
-ADMINS = [6251262108, 7114090399]
-TOKEN = os.getenv("T_TECH_TOKEN")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
-PORT = int(os.getenv("PORT", 10000))
-cache = None
-diff = 10
-def clientConnect():
-    with Client(TOKEN) as client:
-        return client
+CHANEL = -1003848702995
+admChk = funcs.adminCheck
+flag = {"status" : False, "dataType" : None}
+
+msgs = ["Чтобы использовать функции бота, подпишитесь на канал. Там интересно и полезно 😊. Как подпишишьсяб нажми /start",
+        "Добро пожаловать! Я InvestHelper! Я здесь, чтобы помогать тебе с финансами 😊\nВот что я могу"]
+
+subKbd = [[InlineKeyboardButton("Подписаться ✅", url='https://t.me/+7-nEZdgvOXMwYzEy')]]
+back = [[InlineKeyboardButton("◀️ НАЗАД", callback_data="back")]]
+
+back2 = [[InlineKeyboardButton("◀️ НАЗАД", callback_data="back")], [InlineKeyboardButton("🔍 Поиск по тикеру", callback_data="tickerSearch")],[InlineKeyboardButton("🗑️ Удалить портфель", callback_data="delCase")]]
+
+mainMenu = [[InlineKeyboardButton("🔑 Ключевая ставка", callback_data="keyrate"), InlineKeyboardButton("💵 Курсы валют", callback_data="currency")],
+            [InlineKeyboardButton("📈 Инфляция", callback_data="inflation"), InlineKeyboardButton("🪙 МосБиржа (MOEX)", callback_data="moex")],
+            [InlineKeyboardButton("📊 Инвестиционный калькулятор", callback_data="calc")],
+            [InlineKeyboardButton("💼 Добавить портфель T-Инвестиций", callback_data="add-port")]]
+
+mainMenu2 = [[InlineKeyboardButton("🔑 Ключевая ставка", callback_data="keyrate"), InlineKeyboardButton("💵 Курсы валют", callback_data="currency")],
+            [InlineKeyboardButton("📈 Инфляция", callback_data="inflation"), InlineKeyboardButton("🪙 МосБиржа (MOEX)", callback_data="moex")],
+            [InlineKeyboardButton("📊 Инвестиционный калькулятор", callback_data="calc")],
+            [InlineKeyboardButton("💼 Ваш портфель T-Инвестиций", callback_data="port")]]
 
 
-def checkUser(id):
-    return id in ADMINS
-
-def acc_init(): 
-    with Client(TOKEN) as client:
-        accs = client.users.get_accounts()
-        accounts = {i.id:{
-            "name": i.name,
-        }
-        for i in accs.accounts
-        }
-        return accounts
-
-def getAssetName(figi, client):
-    name = client.instruments.get_instrument_by(id_type=InstrumentIdType.INSTRUMENT_ID_TYPE_FIGI, id=figi)
-    return name.instrument.name
+async def subCheck(id, bot):
+    try:
+        member = await bot.get_chat_member(chat_id = CHANEL, user_id = id)
+        if member.status not in ["member", "administrator", "creator"]:
+            return False
+    except Exception as e:
+        print(f'Ошибка\n{e}')
+    return True
 
 
-def getAssets(accounts: object):
-    with Client(TOKEN) as client:
-        
-        for id in accounts:
-            portfolio = client.operations.get_portfolio(account_id=id)
-            
-            assets = {
-                pos.instrument_uid:{
-                    "name":getAssetName(pos.figi, client=client),
-                    "amount": pos.quantity.units,
-                    "price":pos.current_price.units + pos.current_price.nano / 1e9,
-                    "figi": pos.figi
-                }
-                for pos in portfolio.positions
-            }
-            for pos in portfolio.positions:
-                print(pos.quantity.units, pos.instrument_uid, pos.instrument_type, pos.figi, pos.current_nkd, getAssetName(pos.figi, client=client))
-    return assets
-
-
-
-print(acc_init())    
-
-getAssets(acc_init())
-print(getAssets(acc_init()))
-         
-class turnOnTrcking():
-    def __init__(self):
-        """
-        :param client: Профиль пользователя
-        :param assets: Активы пользователя
-        :type assets: object
-        :param accounts: Все счета пользователя
-        :type accounts: object
-        :param interval: Интервал отслеживания в секундах
-        :type interval: int
-        """
-        self.state = False
-        self.task = None
-        self.client = clientConnect()
-        self.accounts = acc_init()
-        self.assets = getAssets(self.accounts)
-        global diff
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    uid = update.effective_user.id
+    funcs.saveUser(uid, update.effective_user.first_name, update.effective_user.username)
 
     
-        
-    async def tracking(self):
-        sended = False
-        try:
+    if not await subCheck(uid, context.bot):
+        markup = InlineKeyboardMarkup(subKbd)
+        await update.message.reply_text(msgs[0], reply_markup=markup)
+        return 0
+    
+    if investment.tokenCheck(uid):
+        markup = InlineKeyboardMarkup(mainMenu2)
+    else:
+        markup = InlineKeyboardMarkup(mainMenu)
 
-            while True: 
-                prices = getPrices(self.assets)
-                print(pricesCompare(prices))
-                await asyncio.sleep(self.interval)
-                if pricesCompare(prices) != False and sended != True:
-                    await self.app.bot.send_message(ADMINS[0], f'⚠️ ВНИМАНИЕ! Обнаружено изменение цены на {diff} руб.\n\n{pricesCompare(prices)}')
-                    sended = True
-                    await self.turnOff()
-        except asyncio.CancelledError:
-            print("task stopped")
-            raise
+    
+    await update.message.reply_text(msgs[1], reply_markup=markup)
+    
 
 
-    async def turnOn(self, interval: int, app):
-        self.app = app
-        if self.task and not self.task.done():
-            self.interval = interval
-            
+async def calculation(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    args = context.args
+    summ = int(args[0])
+    percent = int(args[2])/100
+    term = int(args[1])
+    mrk = InlineKeyboardMarkup(back)
+    result = round(summ * (((1 + percent/12)**(12*term) - 1)/(percent/12)), 2)
+    invest = summ * 12 * term
+    percents = result - invest
+    await update.message.reply_text(f'В конце срока вы получите:\n📈{result:,}₽\n\nВложенные средства:\n💵{invest:,}₽\n\nПолучено процентов:\n✨{percents:,}₽'.replace(",", " "), reply_markup=mrk)
+
+async def callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    data = query.data
+    uid = update.effective_user.id
+    chat = update.effective_chat.id
+    now = datetime.now().strftime("%d.%m.%Y")
+    mrk = InlineKeyboardMarkup(back)
+    portmrk = InlineKeyboardMarkup(back2)
+
+    if not await subCheck(uid, context.bot):
+        markup = InlineKeyboardMarkup(subKbd)
+        await context.bot.send_message(chat_id=chat, text=msgs[0], reply_markup=markup)
+        return 0
+    
+    if data == "back":
+        flag["dataType"] = ''
+        flag["status"] = False
+
+        if investment.tokenCheck(uid):
+            markup = InlineKeyboardMarkup(mainMenu2)
+        else:
+            markup = InlineKeyboardMarkup(mainMenu)
+
+        await query.edit_message_text(msgs[1], reply_markup=markup)
+
+    elif data == "keyrate":
+        keyrate = ttech.getRateKey()
+        await query.edit_message_text(f'Текущая ключевая ставка ЦБРФ:\n\n{keyrate}\n\n{now}', reply_markup=mrk)
+
+    elif data == "currency":
+        await query.edit_message_text(f'{ttech.getCurrrency()}', reply_markup=mrk)
+
+    elif data == "inflation":
+        await query.edit_message_text(f'{ttech.getInflation()}', reply_markup=mrk)
+
+    elif data == "calc":
+        await query.edit_message_text(f'Для рассчета введите команду:\n\n/calc [Ежемесячная сумма пополнений] [срок инвестирования] [годовая ставка]', reply_markup=mrk)
+
+    elif data == "add-port":
+        await query.edit_message_text(f'Отправьте свой API-токен из Т-Инвестиций', reply_markup=mrk)
+        flag["dataType"] = 'token'
+        flag["status"] = True
+
+    elif data == "moex":
+        await query.edit_message_text(f'{ttech.moex()}', reply_markup=mrk)
+
+    elif data == "port":
+        await query.edit_message_text(investment.Management(funcs.dbConnect("SELECT token FROM ports WHERE uid = ?", (uid,))[0][0]).getCase(), reply_markup=portmrk)
+
+    elif data == "delCase":
+        if funcs.dbConnect("DELETE FROM ports WHERE uid = ?", (uid,)):
+            await query.edit_message_text(f'✅ Портфель успешно удален\nДля обеспечения безопасности удалите токен в аккаунте Т-Инвестиции', reply_markup=mrk)
+        else:
+            await query.edit_message_text(f'❌ При выполнении запроса произошла ошибка!\nПопробуйте еще раз', reply_markup=mrk)
+
+    elif data == "tickerSearch":
+        flag["dataType"] = "ticker"
+        flag["status"] = True
+        await query.edit_message_text(f'Введите тикер')
+
+
+
+
+
+
+
+
+
+async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    mrk = InlineKeyboardMarkup(back)
+    portmrk = InlineKeyboardMarkup(back2)
+    if flag["dataType"] == "token" and flag["status"] == True:
+        text = update.message.text
+        if text[:2] != 't.' and len(text) < 88:
+            await update.message.reply_text(f'Неверный токен!', reply_markup=mrk)
             return
         
-        self.interval = interval
-        self.task = asyncio.create_task(self.tracking())
+        result = investment.addToken(text, user.id)
+        if result == True:
+            await update.message.reply_text(f'Портфель добавлен!', reply_markup=mrk)
+            flag["dataType"] = ''
+            flag["status"] = False
+        else:
+            update.message.reply_text(f'Произошла ошибка!\n\n{result}', reply_markup=mrk)
+
+    elif flag["dataType"] == "ticker" and flag["status"] == True:
+        text = update.message.text
+        result = investment.Management(funcs.dbConnect("SELECT token FROM ports WHERE uid = ?", (user.id,))[0][0]).tickerSearch(text)
+        await update.message.reply_text(f'Атив: {result[0]}\nЦена: {result[1]}', reply_markup=mrk)
         
-        
-        
-
-    async def turnOff(self):
-        if self.task and not self.task.done():
-            self.task.cancel()
-            try: 
-                await self.task
-            except asyncio.CancelledError:
-                pass
-
-            self.task = None
-            
-
-
-            
-async def sendMessage(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        result = '123'
-        # for i in content:
-        #     result += f'{content[i]["name"]} | {content[i]["price"]}\n\n'
-
-        await context.bot.send_message(ADMINS[0], result)       
-        
-def pricesCompare(tracked_price: object):
-    global cache, diff
-    for i in tracked_price:
-        if tracked_price[i]["price"] - cache[i]["price"] >= diff:
-            return f'{tracked_price[i]["name"]} | {cache[i]["price"]} -> {tracked_price[i]["price"]}'
-            
-        else: 
-            return False
-
-def getPrices(assets):
-    global cache
-    with Client(TOKEN) as client:
-        uids = list(assets.keys())
-        
-        prices = client.market_data.get_last_prices(instrument_id=uids)
-        if cache is None:
-            cache = {i.instrument_uid:{
-                   "name":getAssetName(i.figi, client),
-                   "price": i.price.units + i.price.nano / 1e9
-                   }
-                   for i in prices.last_prices}
-        
-        # for i in prices.last_prices:
-        #     price = i.price.units + i.price.nano / 1e9
-        #     print(price)
-
-        changes = {i.instrument_uid:{
-                   "name":getAssetName(i.figi, client),
-                   "price": i.price.units + i.price.nano / 1e9
-                   }
-                   for i in prices.last_prices}
-        return changes
-
-
-TRACK = turnOnTrcking()
 
 
 
 
-
-
-
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not(checkUser(update.effective_user.id)):
-        await update.message.reply_text(f"У вас недостаточно прав для использования данной команды!")
-        return 0
-    
-    result = ''
-    assets = getAssets(acc_init())
-    port_price = 0
-    for i in assets:
-        result += f'{assets[i]["name"]} | {assets[i]["amount"]} шт. | {assets[i]["price"]} руб./шт.\n'
-        result += f'---------------\n'
-        port_price += assets[i]["price"] * assets[i]["amount"]
-    result += f'\nЦена портфеля: {port_price} руб.'
-
-    await update.message.reply_text(f'Здравствуйте {update.effective_user.first_name}! Вот Ваши активы:')
-    await update.message.reply_text(result)
-
-
-
-
-
-async def trackingManage(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not(checkUser(update.effective_user.id)):
-        await update.message.reply_text(f"У вас недостаточно прав для использования данной команды!")
-        return 0
-    
-    args = context.args
-    args[0] = args[0].upper()
-    if args[0] == "ON" and len(args) == 2:
-        
-        await TRACK.turnOn(int(args[1]), context.application)
-        await update.message.reply_text(f'✅ Отслеживание включено! ({args[1]})')
-        
-    elif args[0] == "OFF":
-        await TRACK.turnOff()
-        await update.message.reply_text(f'💤 Отслеживание выключено!')
-
-
-
-
-async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not(checkUser(update.effective_user.id)):
-        await update.message.reply_text(f"У вас недостаточно прав для использования данной команды!")
-        return 0
-    menu = [[InlineKeyboardButton("Список счетов", callback_data = "portList")]]
-    markup = InlineKeyboardMarkup(menu)
-    await update.message.reply_text(f'М Е Н Ю', reply_markup=markup)
-
-
-
-
-async def memory(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not(checkUser(update.effective_user.id)):
-        await update.message.reply_text(f"У вас недостаточно прав для использования данной команды!")
-        return 0
-    result =''
-    global cache
-    if cache is not None:
-        for i in cache:
-            result += f'{cache[i]["name"]} | {cache[i]["price"]}\n\n'
+async def data(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    security.dataSecure()
+    if funcs.adminCheck(update.effective_user.id):
+        await update.message.reply_document("data.txt")
     else: 
-        result += f"Память пуста"
-    await update.message.reply_text(result)
+        await update.message.reply_text(f'У вас недостаточно прав для использования данной команды!')
 
 
 
-
-async def changeDiff(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not(checkUser(update.effective_user.id)):
-        await update.message.reply_text(f"У вас недостаточно прав для использования данной команды!")
-        return 0
-    global diff
-    args = context.args
-    if len(args) !=1:
-        await update.message.reply_text(f'❌Неверная команда\n✅changedif [seconds]')
-        return
-    diff = int(args[0])
-    await update.message.reply_text(f'✅Расхождение цен изменено на {diff} руб.')
 
 
 app = ApplicationBuilder().token(BOT).build()
 app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("track", trackingManage))
-app.add_handler(CommandHandler("menu", menu))
-app.add_handler(CommandHandler("memory", memory))
-app.add_handler(CommandHandler("changedif", changeDiff))
+app.add_handler(CommandHandler("calc", calculation))
+app.add_handler(CommandHandler("data", data))
+app.add_handler(CallbackQueryHandler(callback))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, messages))
+
+
+
+
 if __name__ == "__main__":
     print("W O R K I N G ")
     
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
-    getPrices(getAssets(acc_init()))
+    app.run_polling()
+    
     
     print("S T O P E D ")
