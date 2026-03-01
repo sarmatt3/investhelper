@@ -2,7 +2,7 @@ import sqlite3
 import ttech
 
 
-def dbConnect(sql: str, val: tuple = ()):
+async def dbConnect(sql: str, val: tuple = ()):
     try:
         conn = sqlite3.connect("investhelper.db")
         cursor = conn.cursor()
@@ -31,12 +31,12 @@ admins = {item[0]:{
 
 
 
-def adminCheck(uid):
+async def adminCheck(uid):
     return uid in admins
 
 
 
-def saveUser(uid, name, username):
+async def saveUser(uid, name, username):
     try:
         check = dbConnect("SELECT * FROM users WHERE uid = ?", (uid,))
         if not(check == []): 

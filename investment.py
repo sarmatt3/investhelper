@@ -15,16 +15,16 @@ def addToken(token, uid):
 
 
 class Management:
-    def __init__(self, token):
+    async def __init__(self, token):
         self.token = token
         
 
-    def getAssetName(self, figi, client):
+    async def getAssetName(self, figi, client):
         name = client.instruments.get_instrument_by(id_type=InstrumentIdType.INSTRUMENT_ID_TYPE_FIGI, id=figi)
         return name.instrument.name
         
         
-    def getCase(self):
+    async def getCase(self):
 
         result = f''
         with Client(self.token) as self.client:
@@ -40,7 +40,7 @@ class Management:
         return result
     
 
-    def find_on_MOEX(self, client, ticker):
+    async def find_on_MOEX(self, client, ticker):
         client = self.client
         shares = self.client.instruments.shares(instrument_status=InstrumentStatus.INSTRUMENT_STATUS_BASE)
         for s in shares.instruments:
@@ -50,7 +50,7 @@ class Management:
         return None
             
 
-    def tickerSearch(self, ticker):
+    async def tickerSearch(self, ticker):
         with Client(self.token) as self.client:
             instrument = self.find_on_MOEX(self.client, ticker)
             if instrument is None:

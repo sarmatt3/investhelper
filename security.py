@@ -1,5 +1,5 @@
 import funcs
-def dataSecure():
+async def dataSecure():
     data = funcs.dbConnect("SELECT * FROM users")
     
     with open("data.txt", 'w', encoding='utf-8') as f:
