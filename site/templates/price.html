@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="card">
+            <p class="gray-text">Ключевая ставка</p>
+            <h1>{{datas["name"]}}</h1>
+            <table>
+                {%for i in datas%}
+                <tr>
+                    <td>{{i}}:</td>
+                    <td>{{datas[i]["name"]}}</td>
+                    <td>{{datas[i]["low_price"]}}</td>
+                    <td>{{datas[i]["high_price"]}}</td>
+                </tr>
+                {%endfor%}
+            </table>
+        </div>
+</body>
+</html>

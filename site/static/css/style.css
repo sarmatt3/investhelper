@@ -1,0 +1,164 @@
+/* ==========================================================================
+   1. Сброс стилей и базовые настройки (Глобальные переменные)
+   ========================================================================== */
+:root {
+    --bg-color: #0b0f19;       /* Глубокий темный фон всей страницы */
+    --card-bg: #161b26;        /* Фон карточек */
+    --card-border: #242b3d;    /* Цвет аккуратных границ */
+    --accent-color: #00ff66;   /* Ярко-зеленый для акцентов (ставка, важные цифры) */
+    --text-main: #ffffff;      /* Основной белый текст */
+    --text-muted: #8fa0b5;     /* Светло-серый для названий и подписей */
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-family);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+/* ==========================================================================
+   2. Шапка и Навигация (Header & Nav)
+   ========================================================================== */
+header {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto 30px auto;
+}
+
+nav.left a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+nav.left a:hover {
+    color: var(--accent-color);
+}
+
+/* ==========================================================================
+   3. Главный контейнер карточек (Layout)
+   ========================================================================== */
+.main-info {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px; /* Отступы между карточками */
+}
+
+/* ==========================================================================
+   4. Стили карточек (Cards)
+   ========================================================================== */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px; /* Мягкие скругленные углы */
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative
+}
+
+.card svg{
+    position: absolute;
+    right: 24px;
+}
+
+/* Заголовки в карточках ("Ключевая ставка", "Курсы валют") */
+.card .gray-text {
+    color: var(--text-muted);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+}
+
+/* Значение ключевой ставки */
+.card h1 {
+    color: var(--accent-color);
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1;
+    margin-top: 4px;
+}
+
+#key_rate:active{
+    background-color: #202736;
+}
+
+/* ==========================================================================
+   5. Таблица курсов валют (Выравнивание и Читаемость)
+   ========================================================================== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+
+tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Тонкая линия-разделитель */
+    transition: background-color 0.2s ease;
+}
+
+tr:last-child {
+    border-bottom: none; /* Убираем нижнюю линию у последней строки */
+}
+
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.02); /* Легкий интерактивный эффект */
+}
+
+td {
+    padding: 12px 0;
+    font-size: 15px;
+    vertical-align: middle;
+}
+
+/* 1-я колонка: Код валюты (USD, EUR...) */
+td:nth-child(1) {
+    font-weight: 700;
+    color: var(--text-main);
+    width: 60px;
+}
+
+/* 2-я колонка: Название (Доллар США...) */
+td:nth-child(2) {
+    color: var(--text-muted);
+    padding-right: 10px;
+}
+
+/* 3-я колонка: Цифровой курс (Выравниваем строго по правому краю) */
+td:nth-child(3) {
+    font-weight: 600;
+    color: var(--text-main);
+    text-align: right;
+    font-variant-numeric: tabular-nums; /* Делает цифры моноширинными, чтобы они не «прыгали» */
+}
+
+/* ==========================================================================
+   5. Таблица курсов валют (Выравнивание и Читаемость)
+   ========================================================================== */
+
+#more_rates {
+    display: none;
+}
+/* Этот класс будет показываться при клике */
+#more_rates.is-visible {
+    display: block;
+}

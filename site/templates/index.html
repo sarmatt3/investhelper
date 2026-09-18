@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>ИНВЕСТ-помощник</title>
+</head>
+<header>
+    <nav class="left">
+
+        <a href="{{ url_for('home', filename='index.html') }}">Главная</a>
+        <!-- <a href="{{ url_for('birge', filename='birge.html') }}">Рынок</a> -->
+    </nav>
+</header>
+<body>
+    <main class="main-info">
+        <div class="card" id="key_rate">
+            <i class="fa-solid fa-angle-down"></i>
+            <p class="gray-text">Ключевая ставка</p>
+            <h1>{{datas[0]}}</h1>
+             <table id="more_rates">
+                {%for i in datas[1]%}
+                <tr>
+                    <td>{{i}}</td>
+                    <td>{{datas[1][i]}}</td>
+                </tr>
+                {%endfor%}
+            </table>
+        </div>
+    
+        <div class="card">
+            <p class="gray-text">Курсы валют</p>
+    
+            <table>
+                {% for char_code, data in datas[2].items() %}
+                <tr>
+                    <td>{{ char_code }}</td>
+                    <td>{{ data.currency }}</td>
+                    <td>{{ data.rate }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </main>
+
+    <!-- <form action="/get_active" method="post">
+        <input type="text" name="ticker">
+        <div class="dates">
+            <input type="date" name="from_">
+            -
+            <input type="date" name="to">
+        </div>
+        <button type="submit">Поиск</button>
+    </form> -->
+</body>
+<script src="https://kit.fontawesome.com/5923fd2495.js" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+    const rates = document.querySelector("#more_rates");
+    const key = document.getElementById("key_rate");
+    if (!rates || !key) return; 
+
+    key.addEventListener("click", e => {
+        // Метод toggle сам добавляет класс, если его нет, и удаляет, если он есть
+        rates.classList.toggle("is-visible");
+    });
+});
+</script>
+</html>
