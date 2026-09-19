@@ -50,7 +50,10 @@
                 <div class="security">
                     <h3>{{sec["secname"]}}</h3>
                     <p class="price">{{sec["price"]}} руб.</p>
+                    <p class="change {% if sec['change'][:-1] | float >= 0 %}positive{% else %}negative{% endif %}">{{ sec["change"] }}</p>
                     <p class="lot">{{sec["lotsize"]}} лот.</p>
+
+                    
                 </div>
                 {% endfor %}
         </div>
@@ -79,7 +82,9 @@
     });
 });
 </script>
-
+<script>
+    
+</script>
 </html>
 
 

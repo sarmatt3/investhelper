@@ -184,9 +184,10 @@ td:nth-child(3) {
     display: grid;
     /* Разбиваем на аккуратную мини-сетку: название сверху, цена и лот снизу */
     grid-template-areas: 
-        "name name"
-        "price lot";
+        "name change "
+        "price  lot";
     gap: 8px;
+        justify-content: space-between;
 }
 
 .security h3 {
@@ -210,6 +211,25 @@ td:nth-child(3) {
     color: var(--text-muted);
     text-align: right;
     align-self: center; /* Центрируем по вертикали относительно цены */
+}
+
+.security .change, .security .positive{
+    display: flex;
+    width: max-content;
+    color: var(--accent-color);
+    background-color: var(--accent-color);
+    background-color: #00ff662e;
+    padding: 0px 11px;
+    border-radius: 100px;
+    text-align: start;
+    font-size: 14px;
+    font-style: italic;
+    align-items: center;
+}
+
+.security .negative{
+    color: #ff0000;
+    background-color: #ff00002e;
 }
 
 

@@ -111,15 +111,18 @@ def get_active_price_last(ticker):
 def get_popular_actives():
     url = "https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?iss.meta=off&iss.only=securities,marketdata&securities=MOEX,T,SBER,GMKN,GAZP,LKOH,PLZL,MGNT,YNDX,MTSS,VKCO&_=1789812666916&credentials=include&iss.json=extended"
     response = requests.get(url)
-    data = response.json()[1]["securities"]
+    data = response.json()[1]["marketdata"]
+    sec = response.json()[1]["securities"]
     result = []
     for security in data :
-        if security["LISTLEVEL"] == 1:
+        indx = data.index(security)
+        if sec[indx]["LISTLEVEL"] == 1:
             dct = {
                 "secid": security["SECID"],
-                "secname": security["SECNAME"],
-                "price": security["PREVPRICE"],
-                "lotsize": security["LOTSIZE"]
+                "secname": sec[indx]["SECNAME"],
+                "price": security["LAST"],
+                "lotsize": sec[indx]["LOTSIZE"],
+                "change": f'{security["LASTTOPREVPRICE"]}%'
             }
             result.append(dct) 
     return result
