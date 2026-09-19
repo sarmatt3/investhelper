@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request
+from werkzeug.middleware.proxy_fix import ProxyFix
 import invest_helper_funcs
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto = 1, x_host = 1)
 @app.route("/")
 def home():
     key_rate = invest_helper_funcs.key_rate_today()
@@ -26,4 +28,4 @@ def birge():
     return render_template("birge.html", datas = result)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
