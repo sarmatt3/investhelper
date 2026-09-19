@@ -162,3 +162,88 @@ td:nth-child(3) {
 #more_rates.is-visible {
     display: block;
 }
+
+
+/* ==========================================================================
+   6. Стили для ценных бумаг (Адаптивные)
+   ========================================================================== */
+
+/* БАЗОВЫЕ СТИЛИ (Для мобильных устройств по умолчанию) */
+.card.securities {
+    /* На телефонах карточка ведет себя как обычный grid-элемент и не растягивается насильно */
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* На мобилке делаем блоки акций раздельными «плиточками» */
+}
+
+.security {
+    background: rgba(255, 255, 255, 0.02); /* Легкий фон для каждой акции на мобилке */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 14px;
+    display: grid;
+    /* Разбиваем на аккуратную мини-сетку: название сверху, цена и лот снизу */
+    grid-template-areas: 
+        "name name"
+        "price lot";
+    gap: 8px;
+}
+
+.security h3 {
+    grid-area: name;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.security .price {
+    grid-area: price;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.security .lot {
+    grid-area: lot;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+    align-self: center; /* Центрируем по вертикали относительно цены */
+}
+
+
+/* СТИЛИ ДЛЯ БОЛЬШИХ ЭКРАНОВ (Планшеты и ПК) */
+@media (min-width: 600px) {
+    .card.securities {
+        grid-column: 1 / -1; /* Растягиваем во всю ширину только на ПК */
+        gap: 0;
+        padding-bottom: 0;
+    }
+
+    .security {
+        display: flex; /* Возвращаем в строку на широком экране */
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 14px 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .security:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .security .price {
+        margin-left: auto;
+        padding-right: 40px;
+    }
+    
+    .security .lot {
+        min-width: 80px;
+    }
+}
