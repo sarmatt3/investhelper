@@ -38,7 +38,7 @@ def get_currency(basic = False):
     url = "https://cbr.ru/currency_base/daily/"
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
-    basics = ["USD", "EUR", "CNY", "BYN"]
+    basics = ["USD", "EUR", "CNY", "BYN", "AED", "GBP"]
     table = soup.find("table", class_="data")
     if not table:
         return {}
@@ -48,6 +48,7 @@ def get_currency(basic = False):
     
     for row in rows[1:]:
         cells = row.find_all("td")
+    
         if len(cells) >= 5 and not basic:  # Убеждаемся, что строка содержит все нужные данные
             # Индексы: 0 - цифровой код, 1 - буквенный код, 2 - единиц, 3 - валюта, 4 - курс
             num_code = cells[0].text.strip()
@@ -106,6 +107,25 @@ def get_active_price_last(ticker):
     result = data["marketdata"]["data"][0][i]
     return result
 
+
+def get_popular_actives():
+    url = "https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?iss.meta=off&iss.only=securities,marketdata&securities=MOEX,T,SBER,GMKN,GAZP,LKOH,PLZL,MGNT,YNDX,MTSS,VKCO&_=1789812666916&credentials=include&iss.json=extended"
+    response = requests.get(url)
+    data = response.json()[1]["securities"]
+    result = []
+    for security in data :
+        if security["LISTLEVEL"] == 1:
+            dct = {
+                "secid": security["SECID"],
+                "secname": security["SECNAME"],
+                "price": security["PREVPRICE"],
+                "lotsize": security["LOTSIZE"]
+            }
+            result.append(dct) 
+    return result
+
+
+
 if __name__ == "__main__":
     # test = show_key_rate()
     # print(test)
@@ -114,8 +134,8 @@ if __name__ == "__main__":
 
     # test2 = key_rate_today()
     # print(test2)
-    # test3 = get_currency(True)
+    # test4 = get_currency()
     # print(test3)
-    test4 = get_active_price_last("T")
+    test4 = get_popular_actives()
     print(test4)
     
