@@ -43,6 +43,17 @@
                 {% endfor %}
             </table>
         </div>
+
+        <div class="card securities">
+            <p class="gray-text">Акции</p>
+            {% for sec in datas[3] %}
+                <div class="security">
+                    <h3>{{sec["secname"]}}</h3>
+                    <p class="price">{{sec["price"]}} руб.</p>
+                    <p class="lot">{{sec["lotsize"]}} лот.</p>
+                </div>
+                {% endfor %}
+        </div>
     </main>
 
     <!-- <form action="/get_active" method="post">
@@ -68,4 +79,10 @@
     });
 });
 </script>
+<<<<<<< HEAD
 </html>
+=======
+
+
+</html>
+>>>>>>> c83eb43 (securities added)
