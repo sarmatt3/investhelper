@@ -8,7 +8,9 @@ def home():
     key_rate = invest_helper_funcs.key_rate_today()
     more_key_rates = invest_helper_funcs.show_key_rate()
     currency = invest_helper_funcs.get_currency(True)
-    return render_template("index.html", datas=[key_rate, more_key_rates, currency])
+    securities = invest_helper_funcs.get_popular_actives()
+    
+    return render_template("index.html", datas=[key_rate, more_key_rates, currency, securities])
 
 @app.route("/get_active", methods=["POST"])
 def get_active():
