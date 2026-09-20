@@ -18,8 +18,8 @@
     <main class="main-info">
         <div class="card" id="key_rate">
             <i class="fa-solid fa-angle-down"></i>
-            <p class="gray-text">Ключевая ставка</p>
-            <h1>{{datas[0]}}</h1>
+            <p class="gray-text">Ключевая ставка ({{datas[0][0]}})</p>
+            <h1>{{datas[0][1]}}</h1>
              <table id="more_rates">
                 {%for i in datas[1]%}
                 <tr>

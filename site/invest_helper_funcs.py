@@ -24,13 +24,9 @@ def show_key_rate():
 
 
 def key_rate_today():
-    try:
-        key_rates = show_key_rate()
-        today = date.today().strftime("%d.%m.%Y")
-        return key_rates[today]
-    except KeyError:
-        today = (date.today()- timedelta(days=1)).strftime("%d.%m.%Y") 
-        return key_rates[today]
+    key_rates = show_key_rate()
+    return next(iter(key_rates.items()))
+
 
 # ------------------------------------------------
 
